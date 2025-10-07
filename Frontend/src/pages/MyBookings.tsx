@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Scissors, MapPin, Phone, Star } from 'lucide-react';
-import RescheduleModal from '../components/RescheduleModal';
+import { Calendar, Clock, MapPin } from 'lucide-react';
 import api from '../lib/api';
 
 interface Booking {
@@ -14,16 +13,14 @@ interface Booking {
     name: string;
   };
   startTime: string;
+  endTime: string;
   status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 }
 
 const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filter, setFilter] = useState<'all' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'>('all');
-  const [rescheduleModal, setRescheduleModal] = useState<{
-    isOpen: boolean;
-    booking: Booking | null;
-  }>({ isOpen: false, booking: null });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -32,6 +29,9 @@ const MyBookings: React.FC = () => {
         setBookings(response.data);
       } catch (error) {
         console.error('Failed to fetch bookings', error);
+        alert('Failed to load bookings. Please try again.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -56,32 +56,50 @@ const MyBookings: React.FC = () => {
   };
 
   const cancelBooking = async (bookingId: number) => {
+    if (!confirm('Are you sure you want to cancel this booking?')) {
+      return;
+    }
+
     try {
       await api.delete(`/appointments/${bookingId}`);
-      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b));
+      setBookings(bookings.map(b => 
+        b.id === bookingId ? { ...b, status: 'CANCELLED' as const } : b
+      ));
+      alert('Booking cancelled successfully.');
     } catch (error) {
       console.error('Failed to cancel booking', error);
+      alert('Failed to cancel booking. Please try again.');
     }
   };
 
   const handleReschedule = async (bookingId: number, newDate: string, newTime: string) => {
     try {
-      const response = await api.put(`/appointments/${bookingId}/reschedule`, { newStartTime: `${newDate}T${newTime}` });
+      const newStartTime = `${newDate}T${newTime}:00+05:30`;
+      
+      const response = await api.put(`/appointments/${bookingId}/reschedule`, { 
+        newStartTime 
+      });
+      
       setBookings(bookings.map(b => b.id === bookingId ? response.data : b));
       alert('Appointment rescheduled successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to reschedule booking', error);
-      alert('Failed to reschedule appointment.');
+      const errorMessage = error.response?.data?.message || 
+                          'Failed to reschedule appointment. Please try again.';
+      alert(errorMessage);
     }
   };
 
-  const openRescheduleModal = (booking: Booking) => {
-    setRescheduleModal({ isOpen: true, booking });
-  };
-
-  const closeRescheduleModal = () => {
-    setRescheduleModal({ isOpen: false, booking: null });
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#38B6FF] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your bookings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -146,7 +164,7 @@ const MyBookings: React.FC = () => {
                         {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
                       </span>
                       <p className="text-lg font-semibold text-[#38B6FF] mt-1">
-                        ${booking.service.priceCents / 100}
+                        ₹{booking.service.priceCents / 100}
                       </p>
                     </div>
                   </div>
@@ -158,7 +176,12 @@ const MyBookings: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Clock className="h-5 w-5 text-[#38B6FF]" />
-                      <span>{new Date(booking.startTime).toLocaleTimeString()} ({booking.service.durationMinutes} min)</span>
+                      <span>
+                        {new Date(booking.startTime).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })} ({booking.service.durationMinutes} min)
+                      </span>
                     </div>
                   </div>
 
@@ -169,11 +192,8 @@ const MyBookings: React.FC = () => {
                     
                     {booking.status === 'CONFIRMED' && (
                       <div className="flex space-x-2">
-                        <button onClick={() => openRescheduleModal(booking)} className="px-4 py-2 text-sm font-medium text-[#38B6FF] border border-[#38B6FF] rounded-md hover:bg-blue-50 transition-colors">
-                          Reschedule
-                        </button>
                         <button
-                         onClick={() => cancelBooking(booking.id)}
+                          onClick={() => cancelBooking(booking.id)}
                           className="px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-md hover:bg-red-50 transition-colors"
                         >
                           Cancel
@@ -187,18 +207,9 @@ const MyBookings: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Reschedule Modal */}
-      {rescheduleModal.booking && (
-        <RescheduleModal
-          booking={rescheduleModal.booking}
-          isOpen={rescheduleModal.isOpen}
-          onClose={closeRescheduleModal}
-          onReschedule={handleReschedule}
-        />
-      )}
     </div>
   );
 };
 
 export default MyBookings;
+                

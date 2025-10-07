@@ -11,6 +11,7 @@ const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,11 +23,29 @@ const SignUp: React.FC = () => {
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await api.post('/auth/signup', { fullName: name, email, password });
+      await api.post('/auth/signup', { 
+        fullName: name, 
+        email, 
+        password 
+      });
+      alert('Account created successfully! Please log in.');
       navigate('/login');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred.');
+      console.error('Signup error:', err);
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.errors?.email?.[0] ||
+                          'Failed to create account. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,7 +62,12 @@ const SignUp: React.FC = () => {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="text-red-500 text-center">{error}</div>}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+              {error}
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="sr-only">
@@ -91,7 +115,7 @@ const SignUp: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#38B6FF] focus:border-[#38B6FF] focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Password (min 6 characters)"
               />
               <button
                 type="button"
@@ -138,9 +162,10 @@ const SignUp: React.FC = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#38B6FF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#38B6FF]"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#38B6FF] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#38B6FF] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign up
+              {loading ? 'Creating account...' : 'Sign up'}
             </button>
           </div>
 

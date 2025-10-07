@@ -5,11 +5,14 @@ import com.internalgroomers.Internalgroomers.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 
 @Configuration
@@ -21,7 +24,8 @@ public class DataSeeder {
     @Bean
     CommandLineRunner initData(SalonRepository salonRepo,
                                ServiceRepository serviceRepo,
-                               CustomerRepository customerRepo) {
+                               CustomerRepository customerRepo,
+                               PasswordEncoder passwordEncoder) {
         return args -> {
             ObjectMapper mapper = new ObjectMapper();
 
@@ -39,28 +43,54 @@ public class DataSeeder {
                 hours.put("monday", "09:00-18:00");
                 hours.put("tuesday", "09:00-18:00");
                 hours.put("wednesday", "09:00-18:00");
+                hours.put("thursday", "09:00-18:00");
+                hours.put("friday", "09:00-18:00");
+                hours.put("saturday", "10:00-16:00");
+                hours.put("sunday", "Closed");
                 salon.setOpeningHours(hours);
 
                 salonRepo.save(salon);
+                log.info("Created initial salon '{}' with id={}", salon.getName(), salon.getId());
 
                 ServiceEntity haircut = new ServiceEntity();
                 haircut.setName("Haircut");
                 haircut.setDescription("Professional haircut service");
-                haircut.setPriceCents(30000L);
+                haircut.setPriceCents(30000L); // $300.00
                 haircut.setDurationMinutes(30);
                 haircut.setSalon(salon);
                 serviceRepo.save(haircut);
                 log.info("Created initial service '{}' with id={}", haircut.getName(), haircut.getId());
+
+                ServiceEntity shave = new ServiceEntity();
+                shave.setName("Beard Trim");
+                shave.setDescription("Professional beard grooming");
+                shave.setPriceCents(15000L); // $150.00
+                shave.setDurationMinutes(20);
+                shave.setSalon(salon);
+                serviceRepo.save(shave);
+                log.info("Created initial service '{}' with id={}", shave.getName(), shave.getId());
             }
 
             if (customerRepo.count() == 0) {
                 Customer cust = new Customer();
                 cust.setFullName("Test User");
                 cust.setEmail("test@example.com");
-                cust.setPassword("password"); // ⚠️ TODO: hash this
+                // ✅ FIXED: Hash the password properly
+                cust.setPassword(passwordEncoder.encode("password123"));
                 cust.setPhone("1234567890");
+                cust.setRoles(Set.of(Role.USER));
                 customerRepo.save(cust);
-                log.info("Created initial customer id={}", cust.getId());
+                log.info("Created initial customer '{}' with id={}", cust.getEmail(), cust.getId());
+
+                // Create an admin user
+                Customer admin = new Customer();
+                admin.setFullName("Admin User");
+                admin.setEmail("admin@example.com");
+                admin.setPassword(passwordEncoder.encode("admin123"));
+                admin.setPhone("9999999999");
+                admin.setRoles(Set.of(Role.ADMIN));
+                customerRepo.save(admin);
+                log.info("Created admin user '{}' with id={}", admin.getEmail(), admin.getId());
             }
 
             // Ensure at least one ServiceEntity exists (in case salons already existed)
@@ -87,6 +117,8 @@ public class DataSeeder {
                 svc = serviceRepo.save(svc);
                 log.info("Created fallback service '{}' with id={}", svc.getName(), svc.getId());
             }
+
+            log.info("✅ Data seeding completed successfully!");
         };
     }
 }
