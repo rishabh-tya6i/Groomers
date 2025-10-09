@@ -12,9 +12,6 @@ public class CreateAppointmentRequest {
     private Long serviceId;
 
     @NotNull
-    private Long customerId;
-
-    @NotNull
     private OffsetDateTime startTime;
 
     // ---- Getters and Setters ----
@@ -23,9 +20,6 @@ public class CreateAppointmentRequest {
 
     public Long getServiceId() { return serviceId; }
     public void setServiceId(Long serviceId) { this.serviceId = serviceId; }
-
-    public Long getCustomerId() { return customerId; }
-    public void setCustomerId(Long customerId) { this.customerId = customerId; }
 
     public OffsetDateTime getStartTime() { return startTime; }
     public void setStartTime(OffsetDateTime startTime) { this.startTime = startTime; }
