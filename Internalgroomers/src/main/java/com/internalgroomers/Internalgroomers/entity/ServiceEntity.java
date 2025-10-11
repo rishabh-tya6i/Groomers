@@ -18,9 +18,13 @@ public class ServiceEntity {
 
     private String name;
     private String description;
-    private Integer durationMinutes; // make sure this exists
+    private Integer durationMinutes;
+
     @Column(name = "price")
     private Long priceCents;
+
+    @Column(name = "image_path")
+    private String imagePath;
 
     // ---- Getters & Setters ----
     public Long getId() { return id; }
@@ -40,5 +44,7 @@ public class ServiceEntity {
 
     public Long getPriceCents() { return priceCents; }
     public void setPriceCents(Long priceCents) { this.priceCents = priceCents; }
-}
 
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+}

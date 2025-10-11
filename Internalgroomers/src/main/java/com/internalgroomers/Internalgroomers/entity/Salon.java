@@ -18,7 +18,8 @@ public class Salon {
 
     private String name;
 
-    private String imageUrl;
+    @Column(name = "image_path")
+    private String imagePath;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -47,6 +48,10 @@ public class Salon {
     @JsonManagedReference
     private List<ServiceEntity> services = new ArrayList<>();
 
+    @OneToMany(mappedBy = "salon", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Staff> staff = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private Customer owner;
@@ -58,8 +63,8 @@ public class Salon {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -92,10 +97,13 @@ public class Salon {
     public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
 
     public JsonNode getOpeningHours() { return openingHours; }
-
     public void setOpeningHours(JsonNode openingHours) { this.openingHours = openingHours; }
+
     public List<ServiceEntity> getServices() { return services; }
     public void setServices(List<ServiceEntity> services) { this.services = services; }
+
+    public List<Staff> getStaff() { return staff; }
+    public void setStaff(List<Staff> staff) { this.staff = staff; }
 
     public Customer getOwner() { return owner; }
     public void setOwner(Customer owner) { this.owner = owner; }

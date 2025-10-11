@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +22,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity // Enable @PreAuthorize annotations
 public class SecurityConfig {
 
     @Bean
@@ -41,7 +43,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -57,11 +59,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Disable form login and HTTP Basic (prevents redirects)
+                // Disable form login and HTTP Basic
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
 
-                // Return 401 instead of redirecting to login
+                // Return 401 instead of redirecting
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
@@ -73,10 +75,17 @@ public class SecurityConfig {
                         // Public read-only endpoints (browsing)
                         .requestMatchers("/api/salons/**").permitAll()
                         .requestMatchers("/api/services/**").permitAll()
+                        .requestMatchers("/api/slots/salon/**").permitAll()
+                        .requestMatchers("/api/staff/salon/**").permitAll()
+
+                        // Public file access
+                        .requestMatchers("/api/files/**").permitAll()
 
                         // Protected endpoints (require authentication)
-                        .requestMatchers("/api/bookings/**").authenticated()
-                        .requestMatchers("/api/customers/**").authenticated()
+                        .requestMatchers("/api/appointments/**").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/staff/**").authenticated()
+                        .requestMatchers("/api/slots/**").authenticated()
 
                         // Require authentication for all other requests
                         .anyRequest().authenticated()

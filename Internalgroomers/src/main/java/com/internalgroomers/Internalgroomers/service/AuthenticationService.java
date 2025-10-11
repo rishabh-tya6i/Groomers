@@ -27,7 +27,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(CustomerRepository customerRepository,
-                                 SalonRepository salonRepository, PasswordEncoder passwordEncoder,
+                                 SalonRepository salonRepository,
+                                 PasswordEncoder passwordEncoder,
                                  JwtTokenProvider jwtTokenProvider,
                                  AuthenticationManager authenticationManager) {
         this.customerRepository = customerRepository;
@@ -76,22 +77,24 @@ public class AuthenticationService {
             throw new RuntimeException("Email address already in use.");
         }
 
+        // Create customer with SALON role
         Customer customer = new Customer();
         customer.setFullName(request.getFullName());
         customer.setEmail(request.getEmail());
         customer.setPassword(passwordEncoder.encode(request.getPassword()));
         customer.setPhone(request.getPhone());
-        customer.setRoles(Set.of(Role.ADMIN)); // or VENDOR if you have it
+        customer.setRoles(Set.of(Role.SALON)); // Changed from ADMIN to SALON
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        com.internalgroomers.Internalgroomers.entity.Salon salon = new com.internalgroomers.Internalgroomers.entity.Salon();
+        // Create salon linked to this customer
+        Salon salon = new Salon();
         salon.setName(request.getSalonName());
         salon.setDescription(request.getSalonDescription());
         salon.setCity(request.getSalonCity());
         salon.setContactPhone(request.getSalonContactPhone());
         salon.setContactEmail(request.getSalonContactEmail());
-        salon.setImageUrl(request.getSalonImageUrl());
+        salon.setImagePath(request.getSalonImageUrl()); // This will be null initially, can be updated later
         salon.setOwner(savedCustomer);
 
         salonRepository.save(salon);
