@@ -18,6 +18,8 @@ public class Salon {
 
     private String name;
 
+    private String imageUrl;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -45,12 +47,19 @@ public class Salon {
     @JsonManagedReference
     private List<ServiceEntity> services = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private Customer owner;
+
     // --- Getters & Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -87,4 +96,7 @@ public class Salon {
     public void setOpeningHours(JsonNode openingHours) { this.openingHours = openingHours; }
     public List<ServiceEntity> getServices() { return services; }
     public void setServices(List<ServiceEntity> services) { this.services = services; }
+
+    public Customer getOwner() { return owner; }
+    public void setOwner(Customer owner) { this.owner = owner; }
 }

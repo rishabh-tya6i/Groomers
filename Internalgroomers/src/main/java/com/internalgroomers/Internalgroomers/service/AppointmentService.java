@@ -58,6 +58,10 @@ public class AppointmentService {
         return appointmentRepository.findByCustomerId(customerId);
     }
 
+    public List<Appointment> getBookingsForSalon(Long salonId) {
+        return appointmentRepository.findBySalonId(salonId);
+    }
+
     @Transactional
     public void cancelAppointment(Long appointmentId, Long customerId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)

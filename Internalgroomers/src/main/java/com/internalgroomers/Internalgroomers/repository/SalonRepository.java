@@ -30,4 +30,6 @@ public interface SalonRepository extends JpaRepository<Salon, Long> {
     List<Salon> findNearby(@Param("lat") double lat,
                            @Param("lon") double lon,
                            @Param("radiusKm") double radiusKm);
+
+    java.util.Optional<Salon> findByOwner(com.internalgroomers.Internalgroomers.entity.Customer owner);
 }

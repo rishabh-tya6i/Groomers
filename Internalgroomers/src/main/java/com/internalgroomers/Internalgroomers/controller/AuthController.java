@@ -41,4 +41,15 @@ public class AuthController {
         String jwt = authenticationService.signIn(signInRequest);
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
+
+    @PostMapping("/vendor/signup")
+    public ResponseEntity<Map<String, String>> signUpVendor(@Valid @RequestBody com.internalgroomers.Internalgroomers.dto.VendorRegistrationRequest vendorRegistrationRequest) {
+        authenticationService.signUpVendor(vendorRegistrationRequest);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Vendor registered successfully");
+        response.put("email", vendorRegistrationRequest.getEmail());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 }

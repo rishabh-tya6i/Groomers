@@ -4,7 +4,9 @@ import com.internalgroomers.Internalgroomers.dto.auth.SignInRequest;
 import com.internalgroomers.Internalgroomers.dto.auth.SignUpRequest;
 import com.internalgroomers.Internalgroomers.entity.Customer;
 import com.internalgroomers.Internalgroomers.entity.Role;
+import com.internalgroomers.Internalgroomers.entity.Salon;
 import com.internalgroomers.Internalgroomers.repository.CustomerRepository;
+import com.internalgroomers.Internalgroomers.repository.SalonRepository;
 import com.internalgroomers.Internalgroomers.security.JwtTokenProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,15 +21,17 @@ import java.util.Set;
 public class AuthenticationService {
 
     private final CustomerRepository customerRepository;
+    private final SalonRepository salonRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(CustomerRepository customerRepository,
-                                 PasswordEncoder passwordEncoder,
+                                 SalonRepository salonRepository, PasswordEncoder passwordEncoder,
                                  JwtTokenProvider jwtTokenProvider,
                                  AuthenticationManager authenticationManager) {
         this.customerRepository = customerRepository;
+        this.salonRepository = salonRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
@@ -64,5 +68,32 @@ public class AuthenticationService {
 
         // Generate and return JWT token
         return jwtTokenProvider.generateToken(authentication);
+    }
+
+    @Transactional
+    public void signUpVendor(com.internalgroomers.Internalgroomers.dto.VendorRegistrationRequest request) {
+        if (customerRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email address already in use.");
+        }
+
+        Customer customer = new Customer();
+        customer.setFullName(request.getFullName());
+        customer.setEmail(request.getEmail());
+        customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        customer.setPhone(request.getPhone());
+        customer.setRoles(Set.of(Role.ADMIN)); // or VENDOR if you have it
+
+        Customer savedCustomer = customerRepository.save(customer);
+
+        com.internalgroomers.Internalgroomers.entity.Salon salon = new com.internalgroomers.Internalgroomers.entity.Salon();
+        salon.setName(request.getSalonName());
+        salon.setDescription(request.getSalonDescription());
+        salon.setCity(request.getSalonCity());
+        salon.setContactPhone(request.getSalonContactPhone());
+        salon.setContactEmail(request.getSalonContactEmail());
+        salon.setImageUrl(request.getSalonImageUrl());
+        salon.setOwner(savedCustomer);
+
+        salonRepository.save(salon);
     }
 }

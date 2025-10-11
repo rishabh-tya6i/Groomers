@@ -32,6 +32,7 @@ public class DataSeeder {
             if (salonRepo.count() == 0) {
                 Salon salon = new Salon();
                 salon.setName("Star Groomers");
+                salon.setImageUrl("https://via.placeholder.com/150");
                 salon.setDescription("Best grooming services in town");
                 salon.setAddressLine("123 Main Street");
                 salon.setCity("New Delhi");

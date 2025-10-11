@@ -14,4 +14,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                       @Param("start") OffsetDateTime start,
                                       @Param("end") OffsetDateTime end);
     List<Appointment> findByCustomerId(Long customerId);
+
+    List<Appointment> findBySalonId(Long salonId);
 }
