@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS salons CASCADE;
 CREATE TABLE salons (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
-    image_url VARCHAR(255),
+    image_path VARCHAR(255),
     description TEXT,
     address VARCHAR(255),
     city VARCHAR(255),
@@ -29,8 +29,9 @@ CREATE TABLE services (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
     description TEXT,
-    price_cents BIGINT,
+    price BIGINT,
     duration_minutes INT,
+    image_path VARCHAR(255),
     salon_id BIGINT REFERENCES salons(id)
 );
 
@@ -38,13 +39,13 @@ CREATE TABLE customers (
     id BIGSERIAL PRIMARY KEY,
     full_name VARCHAR(255),
     email VARCHAR(255) UNIQUE,
-    password VARCHAR(255),
+    password_hash VARCHAR(255),
     phone VARCHAR(255)
 );
 
 CREATE TABLE customer_roles (
     customer_id BIGINT REFERENCES customers(id),
-    roles VARCHAR(255)
+    role VARCHAR(255)
 );
 
 CREATE TABLE appointments (
@@ -55,4 +56,15 @@ CREATE TABLE appointments (
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     status VARCHAR(255)
+);
+
+CREATE TABLE staff (
+    id BIGSERIAL PRIMARY KEY,
+    salon_id BIGINT REFERENCES salons(id),
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(255),
+    email VARCHAR(255),
+    image_path VARCHAR(255),
+    specialization VARCHAR(255),
+    is_active BOOLEAN
 );
