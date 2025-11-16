@@ -42,6 +42,24 @@ public class AuthController {
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
 
+    @PostMapping("/otp/request")
+    public ResponseEntity<Map<String, String>> requestOtp(@RequestBody Map<String, String> body) {
+        String phone = body.get("phone");
+        authenticationService.requestOtp(phone);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "OTP sent");
+        response.put("phone", phone);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/otp/verify")
+    public ResponseEntity<JwtAuthenticationResponse> verifyOtp(@RequestBody Map<String, String> body) {
+        String phone = body.get("phone");
+        String otp = body.get("otp");
+        String jwt = authenticationService.verifyOtpAndLogin(phone, otp);
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+    }
+
     @PostMapping("/vendor/signup")
     public ResponseEntity<Map<String, String>> signUpVendor(@Valid @RequestBody com.internalgroomers.Internalgroomers.dto.VendorRegistrationRequest vendorRegistrationRequest) {
         authenticationService.signUpVendor(vendorRegistrationRequest);

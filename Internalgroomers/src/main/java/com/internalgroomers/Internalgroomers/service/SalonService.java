@@ -7,6 +7,8 @@ import com.internalgroomers.Internalgroomers.entity.ServiceEntity;
 import com.internalgroomers.Internalgroomers.repository.SalonRepository;
 import com.internalgroomers.Internalgroomers.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +31,7 @@ public class SalonService {
         this.fileStorageService = fileStorageService;
     }
 
+    @Cacheable("salons_dto_all")
     public List<SalonDto> getAllSalons() {
         return salonRepository.findAll()
                 .stream()
@@ -36,10 +39,27 @@ public class SalonService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "salon_dto_by_id", key = "#id")
     public SalonDto getSalonById(Long id) {
         return salonRepository.findById(id)
                 .map(this::convertToDto)
                 .orElseThrow(() -> new RuntimeException("Salon not found with id: " + id));
+    }
+
+    @Cacheable("salons_all")
+    public List<Salon> getAll() {
+        return salonRepository.findAll();
+    }
+
+    @Cacheable(value = "salon_by_id", key = "#id")
+    public Salon getByIdEntity(Long id) {
+        return salonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Salon not found"));
+    }
+
+    @Cacheable(value = "salon_services", key = "#id")
+    public List<ServiceEntity> getSalonServices(Long id) {
+        return serviceRepository.findBySalonId(id);
     }
 
     @Transactional
@@ -96,6 +116,7 @@ public class SalonService {
     }
 
     @Transactional
+    @CacheEvict(value = {"salons_all","salon_by_id","salon_services","salons_dto_all","salon_dto_by_id"}, allEntries = true)
     public ServiceEntity createService(Long salonId, Customer owner, String name,
                                        String description, Long priceCents,
                                        Integer durationMinutes, MultipartFile image) {
@@ -126,6 +147,7 @@ public class SalonService {
     }
 
     @Transactional
+    @CacheEvict(value = {"salons_all","salon_by_id","salon_services","salons_dto_all","salon_dto_by_id"}, allEntries = true)
     public ServiceEntity updateService(Long serviceId, Customer owner, String name,
                                        String description, Long priceCents,
                                        Integer durationMinutes, MultipartFile image) {
@@ -158,6 +180,7 @@ public class SalonService {
     }
 
     @Transactional
+    @CacheEvict(value = {"salons_all","salon_by_id","salon_services","salons_dto_all","salon_dto_by_id"}, allEntries = true)
     public void deleteService(Long serviceId, Customer owner) {
         ServiceEntity service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found with id: " + serviceId));

@@ -35,13 +35,12 @@ public class SalonController {
 
     @GetMapping
     public List<Salon> getAll() {
-        return salonRepository.findAll();
+        return salonService.getAll();
     }
 
     @GetMapping("/{id}")
     public Salon getById(@PathVariable Long id) {
-        return salonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Salon not found"));
+        return salonService.getByIdEntity(id);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -79,7 +78,7 @@ public class SalonController {
 
     @GetMapping("/{id}/services")
     public List<ServiceEntity> getSalonServices(@PathVariable Long id) {
-        return serviceRepository.findBySalonId(id);
+        return salonService.getSalonServices(id);
     }
 
     @GetMapping("/{salonId}/appointments")

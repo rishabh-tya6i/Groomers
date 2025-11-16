@@ -25,17 +25,20 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final OtpService otpService;
 
     public AuthenticationService(CustomerRepository customerRepository,
                                  SalonRepository salonRepository,
                                  PasswordEncoder passwordEncoder,
                                  JwtTokenProvider jwtTokenProvider,
-                                 AuthenticationManager authenticationManager) {
+                                 AuthenticationManager authenticationManager,
+                                 OtpService otpService) {
         this.customerRepository = customerRepository;
         this.salonRepository = salonRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
+        this.otpService = otpService;
     }
 
     @Transactional
@@ -98,5 +101,36 @@ public class AuthenticationService {
         salon.setOwner(savedCustomer);
 
         salonRepository.save(salon);
+    }
+
+    public void requestOtp(String phone) {
+        String normalized = normalizeIndianNumber(phone);
+        otpService.createAndSendOtp(normalized);
+    }
+
+    public String verifyOtpAndLogin(String phone, String otp) {
+        String normalized = normalizeIndianNumber(phone);
+        if (!otpService.verifyOtp(normalized, otp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+        Customer customer = customerRepository.findByPhone(normalized).orElseGet(() -> {
+            Customer c = new Customer();
+            c.setFullName("User");
+            c.setPhone(normalized);
+            c.setEmail(normalized.replace("+", "").replace(" ", "") + "@groomers.local");
+            c.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            c.setRoles(Set.of(Role.USER));
+            return customerRepository.save(c);
+        });
+        Authentication auth = new UsernamePasswordAuthenticationToken(customer, null, customer.getAuthorities());
+        return jwtTokenProvider.generateToken(auth);
+    }
+
+    private String normalizeIndianNumber(String phone) {
+        String p = phone.trim().replaceAll("[^0-9]", "");
+        if (p.startsWith("91") && p.length() == 12) return "+" + p.substring(0, 2) + p.substring(2);
+        if (p.length() == 10) return "+91" + p;
+        if (p.startsWith("+91") && p.length() == 13) return p;
+        throw new IllegalArgumentException("Invalid Indian phone number");
     }
 }
