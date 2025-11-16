@@ -17,6 +17,7 @@ import api from './lib/api';
 interface User {
   fullName: string;
   email: string;
+  phone?: string;
 }
 
 function App() {
@@ -37,7 +38,7 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (token: string, email: string) => {
+  const handleLogin = (token: string) => {
     localStorage.setItem('token', token);
     setAuthToken(token);
     api.get('/users/me').then(response => {
@@ -56,7 +57,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
-        <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} userEmail={user?.email || ''} />
+        <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} userEmail={user?.phone || user?.email || ''} />
         
         <main className="flex-1">
           <Routes>
