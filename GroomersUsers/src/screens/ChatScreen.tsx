@@ -4,7 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 
 const ChatScreen = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
 
   React.useEffect(() => {
     setMessages([
@@ -21,8 +21,8 @@ const ChatScreen = () => {
     ]);
   }, []);
 
-  const onSend = useCallback((messages = []) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
+  const onSend = useCallback((messages: any[] = []) => {
+    setMessages((previousMessages: any[]) => GiftedChat.append(previousMessages, messages));
   }, []);
 
   return (

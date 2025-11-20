@@ -20,10 +20,10 @@ const faqs = [
   },
 ];
 
-const HelpScreen = ({ navigation }) => {
-  const [expanded, setExpanded] = React.useState(null);
+const HelpScreen = ({ navigation }: any) => {
+  const [expanded, setExpanded] = React.useState<string | null>(null);
 
-  const renderFaq = ({ item }) => (
+  const renderFaq = ({ item }: { item: { id: string; question: string; answer: string } }) => (
     <View style={styles.faqContainer}>
       <TouchableOpacity onPress={() => setExpanded(expanded === item.id ? null : item.id)}>
         <Text style={styles.question}>{item.question}</Text>

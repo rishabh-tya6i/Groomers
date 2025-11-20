@@ -1,77 +1,67 @@
 
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { fetchSalons, Salon } from '../api/salons';
 
-const salons = [
-  {
-    id: '1',
-    name: 'Chic Cuts',
-    address: '123 Glamour St, Fashion City',
-    rating: 4.5,
-    reviews: 120,
-    image: 'https://via.placeholder.com/150',
-    services: [
-      { id: '1', name: 'Haircut', price: 30, description: 'Stylish haircut' },
-      { id: '2', name: 'Manicure', price: 25, description: 'Classic manicure' },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Modern Styles',
-    address: '456 Trend Ave, Style Town',
-    rating: 4.8,
-    reviews: 250,
-    image: 'https://via.placeholder.com/150',
-    services: [
-      { id: '1', name: 'Hair Coloring', price: 80, description: 'Full hair coloring' },
-      { id: '2', name: 'Pedicure', price: 40, description: 'Relaxing pedicure' },
-    ],
-  },
-];
+const HeaderActions: React.FC<{ navigation: any }> = ({ navigation }) => (
+  <View style={styles.headerLinksContainer}>
+    <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.headerButton}>
+      <Text style={styles.headerLink}>Notifications</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('Favorites')} style={styles.headerButton}>
+      <Text style={styles.headerLink}>Favorites</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('MyBookings')} style={styles.headerButton}>
+      <Text style={styles.headerLink}>My Bookings</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.headerButtonLast}>
+      <Text style={styles.headerLink}>Profile</Text>
+    </TouchableOpacity>
+  </View>
+);
 
-const SalonListScreen = ({ navigation }) => {
+const SalonItem: React.FC<{ item: Salon; onPress: () => void }> = ({ item, onPress }) => (
+  <TouchableOpacity style={styles.salonContainer} onPress={onPress}>
+    <Image source={{ uri: item.imageUrl || 'https://via.placeholder.com/150' }} style={styles.salonImage} />
+    <View style={styles.salonInfo}>
+      <Text style={styles.salonName}>{item.name}</Text>
+      <Text style={styles.salonAddress}>{item.city}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+const SalonListScreen = ({ navigation }: any) => {
+  const [loading, setLoading] = React.useState(false);
+  const [salons, setSalons] = React.useState<Salon[]>([]);
+
+  React.useEffect(() => {
+    setLoading(true);
+    fetchSalons()
+      .then(setSalons)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={{ marginRight: 15 }}>
-            <Text style={{ color: '#007BFF', fontSize: 16 }}>Notifications</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Favorites')} style={{ marginRight: 15 }}>
-            <Text style={{ color: '#007BFF', fontSize: 16 }}>Favorites</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('MyBookings')} style={{ marginRight: 15 }}>
-            <Text style={{ color: '#007BFF', fontSize: 16 }}>My Bookings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ marginRight: 10 }}>
-            <Text style={{ color: '#007BFF', fontSize: 16 }}>Profile</Text>
-          </TouchableOpacity>
-        </View>
-      ),
+      headerRight: () => <HeaderActions navigation={navigation} />,
     });
   }, [navigation]);
 
-  const renderSalon = ({ item }) => (
-    <TouchableOpacity
-      style={styles.salonContainer}
-      onPress={() => navigation.navigate('SalonDetails', { salon: item })}
-    >
-      <Image source={{ uri: item.image }} style={styles.salonImage} />
-      <View style={styles.salonInfo}>
-        <Text style={styles.salonName}>{item.name}</Text>
-        <Text style={styles.salonAddress}>{item.address}</Text>
-        <Text style={styles.salonRating}>Rating: {item.rating} ({item.reviews} reviews)</Text>
-      </View>
-    </TouchableOpacity>
+  const renderSalon = ({ item }: { item: Salon }) => (
+    <SalonItem item={item} onPress={() => navigation.navigate('SalonDetails', { salon: item })} />
   );
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={salons}
-        renderItem={renderSalon}
-        keyExtractor={(item) => item.id}
-      />
+      {loading ? (
+        <ActivityIndicator />
+      ) : (
+        <FlatList
+          data={salons}
+          renderItem={renderSalon}
+          keyExtractor={(item) => String(item.id)}
+        />
+      )}
     </View>
   );
 };
@@ -115,6 +105,19 @@ const styles = StyleSheet.create({
   salonRating: {
     fontSize: 14,
     color: '#666',
+  },
+  headerLinksContainer: {
+    flexDirection: 'row',
+  },
+  headerLink: {
+    color: '#007BFF',
+    fontSize: 16,
+  },
+  headerButton: {
+    marginRight: 15,
+  },
+  headerButtonLast: {
+    marginRight: 10,
   },
 });
 

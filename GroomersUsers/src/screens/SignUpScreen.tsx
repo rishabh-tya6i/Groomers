@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useAuth } from '../state/AuthContext';
 
-const SignUpScreen = ({ navigation }) => {
+const SignUpScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignUp = () => {
-    if (name && email && password) {
-      // Replace with actual sign-up logic
+  const { register } = useAuth();
+
+  const handleSignUp = async () => {
+    if (!name || !email || !password) {
+      Alert.alert('Sign-Up Failed', 'Please fill in all fields.');
+      return;
+    }
+    try {
+      await register({ name, email, password });
       Alert.alert('Sign-Up Successful', `Welcome, ${name}!`);
       navigation.navigate('Login');
-    } else {
-      Alert.alert('Sign-Up Failed', 'Please fill in all fields.');
+    } catch (e: any) {
+      Alert.alert('Sign-Up Failed', e?.message || 'Unexpected error');
     }
   };
 

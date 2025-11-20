@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useAuth } from '../state/AuthContext';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    if (email && password) {
-      // Replace with actual login logic
-      Alert.alert('Login Successful', `Welcome back, ${email}!`);
-      navigation.navigate('SalonList');
-    } else {
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    if (!email || !password) {
       Alert.alert('Login Failed', 'Please enter both email and password.');
+      return;
+    }
+    try {
+      await login({ email, password });
+      navigation.navigate('SalonList');
+    } catch (e: any) {
+      Alert.alert('Login Failed', e?.message || 'Unexpected error');
     }
   };
 

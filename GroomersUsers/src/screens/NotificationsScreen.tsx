@@ -24,7 +24,7 @@ const notifications = [
 ];
 
 const NotificationsScreen = () => {
-  const renderNotification = ({ item }) => (
+  const renderNotification = ({ item }: { item: { id: string; title: string; message: string; time: string } }) => (
     <View style={styles.notification}>
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.message}>{item.message}</Text>

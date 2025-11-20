@@ -21,8 +21,8 @@ const favoriteSalons = [
   },
 ];
 
-const FavoritesScreen = ({ navigation }) => {
-  const renderFavorite = ({ item }) => (
+const FavoritesScreen = ({ navigation }: any) => {
+  const renderFavorite = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.salonContainer}
       onPress={() => navigation.navigate('SalonDetails', { salon: item })}

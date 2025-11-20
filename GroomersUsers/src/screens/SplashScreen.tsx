@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
-const SplashScreen = ({ navigation }) => {
+const SplashScreen = ({ navigation }: any) => {
   useEffect(() => {
     setTimeout(() => {
       navigation.replace('Login');

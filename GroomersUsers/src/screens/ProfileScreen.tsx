@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 
-const ProfileScreen = ({ navigation }) => {
-  const [name, setName] = useState('John Doe');
+const ProfileScreen = ({ navigation }: any) => {
+  const [name, _setName] = useState('John Doe');
   const [email, setEmail] = useState('john.doe@example.com');
   const [phone, setPhone] = useState('123-456-7890');
   const [isEditing, setIsEditing] = useState(false);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 10 }}>
-          <Text style={{ color: '#007BFF', fontSize: 16 }}>Settings</Text>
-        </TouchableOpacity>
-      ),
+      headerRight: () => <ProfileHeaderRight navigation={navigation} />,
     });
   }, [navigation]);
 
@@ -122,6 +118,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  headerLink: {
+    color: '#007BFF',
+    fontSize: 16,
+  },
+  headerButtonLast: {
+    marginRight: 10,
+  },
 });
 
 export default ProfileScreen;
+
+const ProfileHeaderRight: React.FC<{ navigation: any }> = ({ navigation }) => (
+  <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.headerButtonLast}>
+    <Text style={styles.headerLink}>Settings</Text>
+  </TouchableOpacity>
+);

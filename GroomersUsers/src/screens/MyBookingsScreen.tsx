@@ -1,33 +1,31 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-
-const bookings = [
-  {
-    id: '1',
-    salonName: 'Chic Cuts',
-    date: '2024-08-15',
-    time: '10:00 AM',
-    status: 'Confirmed',
-  },
-  {
-    id: '2',
-    salonName: 'Modern Styles',
-    date: '2024-08-18',
-    time: '02:00 PM',
-    status: 'Pending',
-  },
-];
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { myBookings, Appointment, cancelAppointment } from '../api/appointments';
 
 const MyBookingsScreen = () => {
-  const renderBooking = ({ item }) => (
+  const [loading, setLoading] = React.useState(false);
+  const [bookings, setBookings] = React.useState<Appointment[]>([]);
+
+  const load = () => {
+    setLoading(true);
+    myBookings().then(setBookings).catch(() => {}).finally(() => setLoading(false));
+  };
+
+  React.useEffect(() => {
+    load();
+  }, []);
+
+  const onCancel = async (id: number) => {
+    await cancelAppointment(id);
+    load();
+  };
+
+  const renderBooking = ({ item }: { item: Appointment }) => (
     <View style={styles.bookingContainer}>
-      <Text style={styles.salonName}>{item.salonName}</Text>
-      <Text style={styles.bookingInfo}>Date: {item.date}</Text>
-      <Text style={styles.bookingInfo}>Time: {item.time}</Text>
-      <Text style={[styles.status, item.status === 'Confirmed' ? styles.confirmed : styles.pending]}>
-        {item.status}
-      </Text>
-      <TouchableOpacity style={styles.cancelButton}>
+      <Text style={styles.salonName}>Salon #{item.salonId}</Text>
+      <Text style={styles.bookingInfo}>Start: {new Date(item.startTime).toLocaleString()}</Text>
+      <Text style={[styles.status, item.status === 'CONFIRMED' ? styles.confirmed : styles.pending]}>{item.status}</Text>
+      <TouchableOpacity style={styles.cancelButton} onPress={() => onCancel(item.id)}>
         <Text style={styles.cancelButtonText}>Cancel</Text>
       </TouchableOpacity>
     </View>
@@ -36,11 +34,11 @@ const MyBookingsScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My Bookings</Text>
-      <FlatList
-        data={bookings}
-        renderItem={renderBooking}
-        keyExtractor={(item) => item.id}
-      />
+      {loading ? (
+        <ActivityIndicator />
+      ) : (
+        <FlatList data={bookings} renderItem={renderBooking} keyExtractor={(item) => String(item.id)} />
+      )}
     </View>
   );
 };

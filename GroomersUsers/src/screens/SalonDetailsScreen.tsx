@@ -1,32 +1,37 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
+import { fetchSalonServices, ServiceEntity } from '../api/salons';
 
-const SalonDetailsScreen = ({ route, navigation }) => {
+const SalonDetailsScreen = ({ route, navigation }: any) => {
   const { salon } = route.params;
+  const [services, setServices] = React.useState<ServiceEntity[]>([]);
 
-  const renderService = ({ item }) => (
+  React.useEffect(() => {
+    fetchSalonServices(salon.id).then(setServices).catch(() => {});
+  }, [salon.id]);
+
+  const renderService = ({ item }: { item: ServiceEntity }) => (
     <View style={styles.serviceContainer}>
       <Text style={styles.serviceName}>{item.name}</Text>
-      <Text style={styles.servicePrice}>${item.price}</Text>
+      <Text style={styles.servicePrice}>${(item.priceCents / 100).toFixed(2)}</Text>
       <Text style={styles.serviceDescription}>{item.description}</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: salon.image }} style={styles.salonImage} />
+      <Image source={{ uri: salon.imageUrl || 'https://via.placeholder.com/600x200' }} style={styles.salonImage} />
       <Text style={styles.salonName}>{salon.name}</Text>
-      <Text style={styles.salonAddress}>{salon.address}</Text>
-      <Text style={styles.salonRating}>Rating: {salon.rating} ({salon.reviews} reviews)</Text>
+      <Text style={styles.salonAddress}>{salon.city}</Text>
       
       <Text style={styles.servicesTitle}>Services</Text>
       <FlatList
-        data={salon.services}
+        data={services}
         renderItem={renderService}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
       />
       
-      <TouchableOpacity style={styles.bookButton} onPress={() => navigation.navigate('Booking', { salon })}>
+      <TouchableOpacity style={styles.bookButton} onPress={() => navigation.navigate('Booking', { salon, services })}>
         <Text style={styles.bookButtonText}>Book Now</Text>
       </TouchableOpacity>
     </View>

@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { createAppointment } from '../api/appointments';
+import { useAuth } from '../state/AuthContext';
 
-const BookingScreen = ({ route }) => {
-  const { salon } = route.params;
+const BookingScreen = ({ route }: any) => {
+  const { salon, services } = route.params;
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerContact, setCustomerContact] = useState('');
+  const [serviceId, setServiceId] = useState<number | null>(services?.[0]?.id ?? null);
+  const { token } = useAuth();
 
   const timeSlots = [
     '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
     '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
   ];
 
-  const handleBooking = () => {
-    if (selectedDate && selectedTime && customerName && customerContact) {
-      // Handle booking logic here
-      alert(`Booking confirmed for ${customerName} on ${selectedDate} at ${selectedTime}`);
+  const toIsoOffset = (dateStr: string, timeStr: string) => {
+    const [hourMin, meridiem] = timeStr.split(' ');
+    const [hStr, mStr] = hourMin.split(':');
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    if (meridiem.toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (meridiem.toUpperCase() === 'AM' && h === 12) h = 0;
+    const date = new Date(`${dateStr}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`);
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+  };
+
+  const handleBooking = async () => {
+    if (!token) {
+      Alert.alert('Login required', 'Please login to book an appointment.');
+      return;
+    }
+    if (selectedDate && selectedTime && customerName && customerContact && serviceId) {
+      try {
+        const startTime = toIsoOffset(selectedDate, selectedTime);
+        await createAppointment({ salonId: salon.id, serviceId, startTime, slotId: null });
+        Alert.alert('Booking confirmed', `${customerName} on ${selectedDate} at ${selectedTime}`);
+      } catch (e: any) {
+        Alert.alert('Booking failed', e?.message || 'Unexpected error');
+      }
     } else {
-      alert('Please fill all fields');
+      Alert.alert('Incomplete', 'Please fill all fields');
     }
   };
 
@@ -59,6 +83,21 @@ const BookingScreen = ({ route }) => {
         ))}
       </View>
       
+      <Text style={styles.title}>Select Service</Text>
+      <View style={styles.timeSlotsContainer}>
+        {services?.map((svc: any) => (
+          <TouchableOpacity
+            key={svc.id}
+            style={[styles.timeSlot, serviceId === svc.id && styles.selectedTimeSlot]}
+            onPress={() => setServiceId(svc.id)}
+          >
+            <Text style={[styles.timeSlotText, serviceId === svc.id && styles.selectedTimeSlotText]}>
+              {svc.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <Text style={styles.title}>Your Information</Text>
       <TextInput
         style={styles.input}

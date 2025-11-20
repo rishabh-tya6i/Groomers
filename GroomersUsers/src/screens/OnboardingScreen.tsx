@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Swiper from 'react-native-swiper';
 
-const OnboardingScreen = ({ navigation }) => {
+const OnboardingScreen = ({ navigation }: any) => {
   return (
     <Swiper style={styles.wrapper} showsButtons={false} loop={false}>
       <View style={styles.slide}>
