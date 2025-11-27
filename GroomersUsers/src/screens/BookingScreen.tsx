@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { createAppointment } from '../api/appointments';
+import { setAuthToken } from '../api/client';
 import { useAuth } from '../state/AuthContext';
 import Container from '../components/Container';
 import Title from '../components/Title';
@@ -42,11 +43,19 @@ const BookingScreen = ({ route }: any) => {
     }
     if (selectedDate && selectedTime && customerName && customerContact && serviceId) {
       try {
+        setAuthToken(token);
         const startTime = toIsoOffset(selectedDate, selectedTime);
         await createAppointment({ salonId: salon.id, serviceId, startTime, slotId: null });
         Alert.alert('Booking confirmed', `${customerName} on ${selectedDate} at ${selectedTime}`);
       } catch (e: any) {
-        Alert.alert('Booking failed', e?.message || 'Unexpected error');
+        let errorMessage = e?.message || 'Unexpected error';
+        try {
+          const errorObj = JSON.parse(errorMessage);
+          if (errorObj.message) errorMessage = errorObj.message;
+        } catch (parseError) {
+          // ignore, use original string
+        }
+        Alert.alert('Booking failed', errorMessage);
       }
     } else {
       Alert.alert('Incomplete', 'Please fill all fields');
@@ -57,7 +66,7 @@ const BookingScreen = ({ route }: any) => {
     <Container>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Title text={salon.name} />
-        
+
         <Text style={styles.title}>Select Date</Text>
         <Calendar
           onDayPress={(day) => setSelectedDate(day.dateString)}
@@ -88,7 +97,7 @@ const BookingScreen = ({ route }: any) => {
             textDayHeaderFontSize: 16,
           }}
         />
-        
+
         <Text style={styles.title}>Select Time</Text>
         <View style={styles.timeSlotsContainer}>
           {timeSlots.map((time) => (
@@ -100,7 +109,7 @@ const BookingScreen = ({ route }: any) => {
             />
           ))}
         </View>
-        
+
         <Text style={styles.title}>Select Service</Text>
         <View style={styles.timeSlotsContainer}>
           {services?.map((svc: any) => (
@@ -126,7 +135,7 @@ const BookingScreen = ({ route }: any) => {
           onChangeText={setCustomerContact}
           keyboardType="phone-pad"
         />
-        
+
         <View style={styles.spacer40} />
         <Button title="Confirm Booking" onPress={handleBooking} />
         <View style={styles.spacer20} />
