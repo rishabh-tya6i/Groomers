@@ -9,6 +9,10 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# Disable Flipper by default to avoid common iOS build issues.
+# You can re-enable Flipper by setting `FLIPPER_ENABLED=1` in your environment.
+enable_flipper = ENV['FLIPPER_ENABLED'] == "1" ? true : false
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -20,17 +24,36 @@ target 'GroomersUsers' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  rn_maps_path = '../node_modules/react-native-maps'
+
+  # ✅ React Native Maps with Google Maps on iOS
+  # Option A: using subspecs
+  pod 'react-native-maps', :path => rn_maps_path, :subspecs => ['Google']
+
+  # or Option B (equivalent) – you can use this instead of the line above:
+  # pod 'react-native-maps/Google', :path => rn_maps_path
+
+  # ✅ Google Maps iOS SDK
+  pod 'GoogleMaps'
+  pod 'Google-Maps-iOS-Utils'
+
+  if enable_flipper
+    pod 'FlipperKit', '~> 0.252.0'
+    pod 'FlipperKit/FlipperKitLayoutPlugin', '~> 0.252.0'
+    pod 'FlipperKit/FlipperKitUserDefaultsPlugin', '~> 0.252.0'
+    pod 'FlipperKit/FlipperKitNetworkPlugin', '~> 0.252.0'
+    pod 'FlipperKit/SKIOSNetworkPlugin', '~> 0.252.0'
+    pod 'Flipper-Folly', '~> 2.6'
+  end
 
   post_install do |installer|
     react_native_post_install(
       installer,
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
     )
   end
 end

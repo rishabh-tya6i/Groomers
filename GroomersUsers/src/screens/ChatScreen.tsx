@@ -1,7 +1,7 @@
-
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble } from 'react-native-gifted-chat';
+import { colors } from '../theme';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState<any[]>([]);
@@ -21,18 +21,44 @@ const ChatScreen = () => {
     ]);
   }, []);
 
-  const onSend = useCallback((messages: any[] = []) => {
-    setMessages((previousMessages: any[]) => GiftedChat.append(previousMessages, messages));
+  const onSend = useCallback((newMessages: any[] = []) => {
+    setMessages((previousMessages: any[]) => GiftedChat.append(previousMessages, newMessages));
   }, []);
+
+  const renderBubble = (props: any) => {
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          right: {
+            backgroundColor: colors.primary,
+          },
+          left: {
+            backgroundColor: colors.white,
+          },
+        }}
+        textStyle={{
+          right: {
+            color: colors.white,
+          },
+          left: {
+            color: colors.text,
+          },
+        }}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
       <GiftedChat
         messages={messages}
-        onSend={messages => onSend(messages)}
+        onSend={newMessages => onSend(newMessages)}
         user={{
           _id: 1,
         }}
+        renderBubble={renderBubble}
+        alwaysShowSend
       />
     </View>
   );
@@ -41,7 +67,7 @@ const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
 });
 

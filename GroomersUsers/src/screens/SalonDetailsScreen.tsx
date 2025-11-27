@@ -1,6 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, FlatList } from 'react-native';
 import { fetchSalonServices, ServiceEntity } from '../api/salons';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import Subtitle from '../components/Subtitle';
+import Button from '../components/Button';
+import ServiceItem from '../components/ServiceItem';
+import { colors, typography } from '../theme';
 
 const SalonDetailsScreen = ({ route, navigation }: any) => {
   const { salon } = route.params;
@@ -11,94 +17,44 @@ const SalonDetailsScreen = ({ route, navigation }: any) => {
   }, [salon.id]);
 
   const renderService = ({ item }: { item: ServiceEntity }) => (
-    <View style={styles.serviceContainer}>
-      <Text style={styles.serviceName}>{item.name}</Text>
-      <Text style={styles.servicePrice}>${(item.priceCents / 100).toFixed(2)}</Text>
-      <Text style={styles.serviceDescription}>{item.description}</Text>
-    </View>
+    <ServiceItem item={item} />
   );
 
   return (
-    <View style={styles.container}>
+    <Container>
       <Image source={{ uri: salon.imageUrl || 'https://via.placeholder.com/600x200' }} style={styles.salonImage} />
-      <Text style={styles.salonName}>{salon.name}</Text>
-      <Text style={styles.salonAddress}>{salon.city}</Text>
+      <Title text={salon.name} />
+      <Subtitle text={salon.city} />
       
       <Text style={styles.servicesTitle}>Services</Text>
       <FlatList
         data={services}
         renderItem={renderService}
         keyExtractor={(item) => String(item.id)}
+        showsVerticalScrollIndicator={false}
       />
       
-      <TouchableOpacity style={styles.bookButton} onPress={() => navigation.navigate('Booking', { salon, services })}>
-        <Text style={styles.bookButtonText}>Book Now</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.bookButtonContainer}>
+        <Button title="Book Now" onPress={() => navigation.navigate('Booking', { salon, services })} />
+      </View>
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
   salonImage: {
     width: '100%',
     height: 200,
     borderRadius: 8,
   },
-  salonName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 16,
-  },
-  salonAddress: {
-    fontSize: 16,
-    color: '#666',
-    marginVertical: 8,
-  },
-  salonRating: {
-    fontSize: 16,
-    color: '#666',
-  },
   servicesTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...typography.h2,
+    color: colors.primary,
     marginTop: 24,
     marginBottom: 8,
   },
-  serviceContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  serviceName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  servicePrice: {
-    fontSize: 16,
-    color: '#888',
-    marginTop: 4,
-  },
-  serviceDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  bookButton: {
-    backgroundColor: '#007BFF',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  bookButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  bookButtonContainer: {
+    paddingVertical: 16,
   },
 });
 

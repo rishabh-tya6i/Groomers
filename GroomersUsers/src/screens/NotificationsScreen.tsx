@@ -1,6 +1,9 @@
-
 import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { Text, FlatList, StyleSheet } from 'react-native';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import NotificationItem from '../components/NotificationItem';
+import { colors, typography } from '../theme';
 
 const notifications = [
   {
@@ -25,55 +28,29 @@ const notifications = [
 
 const NotificationsScreen = () => {
   const renderNotification = ({ item }: { item: { id: string; title: string; message: string; time: string } }) => (
-    <View style={styles.notification}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.message}>{item.message}</Text>
-      <Text style={styles.time}>{item.time}</Text>
-    </View>
+    <NotificationItem item={item} />
   );
 
   return (
-    <View style={styles.container}>
+    <Container>
+      <Title text="Notifications" />
       <FlatList
         data={notifications}
         renderItem={renderNotification}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<Text style={styles.emptyText}>No new notifications.</Text>}
+        showsVerticalScrollIndicator={false}
       />
-    </View>
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  notification: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  message: {
-    fontSize: 16,
-    marginTop: 5,
-    color: '#333',
-  },
-  time: {
-    fontSize: 14,
-    marginTop: 10,
-    color: '#999',
-  },
   emptyText: {
+    ...typography.body,
     textAlign: 'center',
-    fontSize: 16,
     marginTop: 50,
-    color: '#666',
+    color: colors.gray,
   },
 });
 

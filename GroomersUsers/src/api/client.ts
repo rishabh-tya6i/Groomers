@@ -6,11 +6,17 @@ export const setAuthToken = (token: string | null) => {
   authToken = token;
 };
 
-const BASE_URL = Platform.select({
-  ios: 'http://localhost:8080',
-  android: 'http://10.0.2.2:8080',
-  default: 'http://localhost:8080',
-});
+// Allow an app-level override for the API base URL (useful when testing on a physical device)
+// You can set `global.__API_BASE_URL__ = 'http://192.168.x.y:8080'` from the debugger or App entrypoint.
+const OVERRIDE_BASE = (global as any)?.__API_BASE_URL__ as string | undefined;
+
+const BASE_URL =
+  OVERRIDE_BASE ||
+  Platform.select({
+    ios: 'http://127.0.0.1:8080',
+    android: 'http://10.0.2.2:8080',
+    default: 'http://localhost:8080',
+  }) || 'http://localhost:8080';
 
 type RequestOptions = {
   method?: string;

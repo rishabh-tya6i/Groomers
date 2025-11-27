@@ -38,6 +38,11 @@ public class SalonController {
         return salonService.getAll();
     }
 
+    @GetMapping("/search")
+    public List<Salon> search(@RequestParam String name) {
+        return salonRepository.findByNameContainingIgnoreCase(name);
+    }
+
     @GetMapping("/{id}")
     public Salon getById(@PathVariable Long id) {
         return salonService.getByIdEntity(id);

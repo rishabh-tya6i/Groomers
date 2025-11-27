@@ -1,6 +1,9 @@
-
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, FlatList, StyleSheet } from 'react-native';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import Button from '../components/Button';
+import FaqItem from '../components/FaqItem';
 
 const faqs = [
   {
@@ -24,66 +27,31 @@ const HelpScreen = ({ navigation }: any) => {
   const [expanded, setExpanded] = React.useState<string | null>(null);
 
   const renderFaq = ({ item }: { item: { id: string; question: string; answer: string } }) => (
-    <View style={styles.faqContainer}>
-      <TouchableOpacity onPress={() => setExpanded(expanded === item.id ? null : item.id)}>
-        <Text style={styles.question}>{item.question}</Text>
-      </TouchableOpacity>
-      {expanded === item.id && <Text style={styles.answer}>{item.answer}</Text>}
-    </View>
+    <FaqItem
+      item={item}
+      isExpanded={expanded === item.id}
+      onPress={() => setExpanded(expanded === item.id ? null : item.id)}
+    />
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Help & FAQs</Text>
+    <Container>
+      <Title text="Help & FAQs" />
       <FlatList
         data={faqs}
         renderItem={renderFaq}
         keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
       />
-      <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('Chat')}>
-        <Text style={styles.chatButtonText}>Live Chat</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.flex1} />
+      <Button title="Live Chat" onPress={() => navigation.navigate('Chat')} />
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  flex1: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
-  },
-  faqContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  question: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  answer: {
-    fontSize: 16,
-    marginTop: 10,
-    color: '#333',
-  },
-  chatButton: {
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  chatButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

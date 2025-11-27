@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import Container from '../components/Container';
+import Input from '../components/Input';
+import Button from '../components/Button';
+import ProfileHeader from '../components/ProfileHeader';
+import { colors, typography } from '../theme';
+import { useAuth } from '../state/AuthContext';
 
 const ProfileScreen = ({ navigation }: any) => {
-  const [name, _setName] = useState('John Doe');
+  const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('john.doe@example.com');
   const [phone, setPhone] = useState('123-456-7890');
   const [isEditing, setIsEditing] = useState(false);
-
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => <ProfileHeaderRight navigation={navigation} />,
-    });
-  }, [navigation]);
+  const { logout } = useAuth();
 
   const handleSave = () => {
     // Add save logic here
@@ -19,20 +20,27 @@ const ProfileScreen = ({ navigation }: any) => {
     Alert.alert('Profile Saved', 'Your profile has been updated successfully.');
   };
 
+  const handleLogout = () => {
+    logout();
+    navigation.navigate('Login');
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.profileHeader}>
-        <Image
-          source={{ uri: 'https://via.placeholder.com/150' }}
-          style={styles.profileImage}
+    <Container>
+      <ProfileHeader name={name} imageUrl="https://via.placeholder.com/150" />
+
+      <View style={styles.infoContainer}>
+        <Text style={styles.label}>Name</Text>
+        <Input
+          value={name}
+          onChangeText={setName}
+          editable={isEditing}
         />
-        <Text style={styles.userName}>{name}</Text>
       </View>
 
       <View style={styles.infoContainer}>
         <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
+        <Input
           value={email}
           onChangeText={setEmail}
           editable={isEditing}
@@ -42,8 +50,7 @@ const ProfileScreen = ({ navigation }: any) => {
 
       <View style={styles.infoContainer}>
         <Text style={styles.label}>Phone</Text>
-        <TextInput
-          style={styles.input}
+        <Input
           value={phone}
           onChangeText={setPhone}
           editable={isEditing}
@@ -51,86 +58,38 @@ const ProfileScreen = ({ navigation }: any) => {
         />
       </View>
 
+      <View style={styles.flex1} />
+
       {isEditing ? (
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.buttonText}>Save</Text>
-        </TouchableOpacity>
+        <Button title="Save" onPress={handleSave} />
       ) : (
-        <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
-          <Text style={styles.buttonText}>Edit Profile</Text>
-        </TouchableOpacity>
+        <Button title="Edit Profile" onPress={() => setIsEditing(true)} />
       )}
-    </View>
+      <View style={styles.spacer16} />
+      <Button
+        title="Logout"
+        onPress={handleLogout}
+        disabled={false}
+      />
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  profileHeader: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 10,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
   infoContainer: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
-    color: '#666',
+    ...typography.body,
+    color: colors.text,
     marginBottom: 5,
   },
-  input: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 10,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  flex1: {
+    flex: 1,
   },
-  editButton: {
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  saveButton: {
-    backgroundColor: '#28a745',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerLink: {
-    color: '#007BFF',
-    fontSize: 16,
-  },
-  headerButtonLast: {
-    marginRight: 10,
+  spacer16: {
+    height: 16,
   },
 });
 
 export default ProfileScreen;
-
-const ProfileHeaderRight: React.FC<{ navigation: any }> = ({ navigation }) => (
-  <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.headerButtonLast}>
-    <Text style={styles.headerLink}>Settings</Text>
-  </TouchableOpacity>
-);

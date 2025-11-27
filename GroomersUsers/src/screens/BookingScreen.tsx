@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { createAppointment } from '../api/appointments';
 import { useAuth } from '../state/AuthContext';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import Button from '../components/Button';
+import TimeSlot from '../components/TimeSlot';
+import Input from '../components/Input';
+import { colors, typography } from '../theme';
 
 const BookingScreen = ({ route }: any) => {
   const { salon, services } = route.params;
@@ -48,93 +54,91 @@ const BookingScreen = ({ route }: any) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.salonName}>{salon.name}</Text>
-      
-      <Text style={styles.title}>Select Date</Text>
-      <Calendar
-        onDayPress={(day) => setSelectedDate(day.dateString)}
-        markedDates={{
-          [selectedDate]: { selected: true, selectedColor: '#007BFF' },
-        }}
-        style={styles.calendar}
-      />
-      
-      <Text style={styles.title}>Select Time</Text>
-      <View style={styles.timeSlotsContainer}>
-        {timeSlots.map((time) => (
-          <TouchableOpacity
-            key={time}
-            style={[
-              styles.timeSlot,
-              selectedTime === time && styles.selectedTimeSlot,
-            ]}
-            onPress={() => setSelectedTime(time)}
-          >
-            <Text
-              style={[
-                styles.timeSlotText,
-                selectedTime === time && styles.selectedTimeSlotText,
-              ]}
-            >
-              {time}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      
-      <Text style={styles.title}>Select Service</Text>
-      <View style={styles.timeSlotsContainer}>
-        {services?.map((svc: any) => (
-          <TouchableOpacity
-            key={svc.id}
-            style={[styles.timeSlot, serviceId === svc.id && styles.selectedTimeSlot]}
-            onPress={() => setServiceId(svc.id)}
-          >
-            <Text style={[styles.timeSlotText, serviceId === svc.id && styles.selectedTimeSlotText]}>
-              {svc.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+    <Container>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Title text={salon.name} />
+        
+        <Text style={styles.title}>Select Date</Text>
+        <Calendar
+          onDayPress={(day) => setSelectedDate(day.dateString)}
+          markedDates={{
+            [selectedDate]: { selected: true, selectedColor: colors.primary },
+          }}
+          style={styles.calendar}
+          theme={{
+            backgroundColor: colors.background,
+            calendarBackground: colors.background,
+            textSectionTitleColor: colors.primary,
+            selectedDayBackgroundColor: colors.primary,
+            selectedDayTextColor: colors.white,
+            todayTextColor: colors.secondary,
+            dayTextColor: colors.text,
+            textDisabledColor: colors.gray,
+            arrowColor: colors.primary,
+            monthTextColor: colors.primary,
+            indicatorColor: colors.primary,
+            textDayFontFamily: 'monospace',
+            textMonthFontFamily: 'monospace',
+            textDayHeaderFontFamily: 'monospace',
+            textDayFontWeight: '300',
+            textMonthFontWeight: 'bold',
+            textDayHeaderFontWeight: '300',
+            textDayFontSize: 16,
+            textMonthFontSize: 16,
+            textDayHeaderFontSize: 16,
+          }}
+        />
+        
+        <Text style={styles.title}>Select Time</Text>
+        <View style={styles.timeSlotsContainer}>
+          {timeSlots.map((time) => (
+            <TimeSlot
+              key={time}
+              text={time}
+              isSelected={selectedTime === time}
+              onPress={() => setSelectedTime(time)}
+            />
+          ))}
+        </View>
+        
+        <Text style={styles.title}>Select Service</Text>
+        <View style={styles.timeSlotsContainer}>
+          {services?.map((svc: any) => (
+            <TimeSlot
+              key={svc.id}
+              text={svc.name}
+              isSelected={serviceId === svc.id}
+              onPress={() => setServiceId(svc.id)}
+            />
+          ))}
+        </View>
 
-      <Text style={styles.title}>Your Information</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={customerName}
-        onChangeText={setCustomerName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contact Number"
-        value={customerContact}
-        onChangeText={setCustomerContact}
-        keyboardType="phone-pad"
-      />
-      
-      <TouchableOpacity style={styles.bookButton} onPress={handleBooking}>
-        <Text style={styles.bookButtonText}>Confirm Booking</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <Text style={styles.title}>Your Information</Text>
+        <Input
+          placeholder="Full Name"
+          value={customerName}
+          onChangeText={setCustomerName}
+        />
+        <View style={styles.spacer20} />
+        <Input
+          placeholder="Contact Number"
+          value={customerContact}
+          onChangeText={setCustomerContact}
+          keyboardType="phone-pad"
+        />
+        
+        <View style={styles.spacer40} />
+        <Button title="Confirm Booking" onPress={handleBooking} />
+        <View style={styles.spacer20} />
+      </ScrollView>
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-  salonName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...typography.h2,
+    color: colors.primary,
     marginTop: 16,
     marginBottom: 8,
   },
@@ -147,44 +151,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  timeSlot: {
-    width: '23%',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 12,
+  spacer20: {
+    height: 20,
   },
-  selectedTimeSlot: {
-    backgroundColor: '#007BFF',
-    borderColor: '#007BFF',
-  },
-  timeSlotText: {
-    fontSize: 14,
-  },
-  selectedTimeSlotText: {
-    color: '#fff',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  bookButton: {
-    backgroundColor: '#007BFF',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  bookButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  spacer40: {
+    height: 40,
   },
 });
 

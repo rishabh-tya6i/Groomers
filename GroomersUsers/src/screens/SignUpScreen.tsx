@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useAuth } from '../state/AuthContext';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import Input from '../components/Input';
+import Button from '../components/Button';
+import { colors } from '../theme';
 
 const SignUpScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
@@ -24,78 +29,49 @@ const SignUpScreen = ({ navigation }: any) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create an Account</Text>
-      <TextInput
-        style={styles.input}
+    <Container>
+      <Title text="Create an Account" />
+      <Input
         placeholder="Full Name"
         value={name}
         onChangeText={setName}
       />
-      <TextInput
-        style={styles.input}
+      <View style={styles.spacer20} />
+      <Input
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <TextInput
-        style={styles.input}
+      <View style={styles.spacer20} />
+      <Input
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
+      <View style={styles.spacer40} />
+      <Button title="Sign Up" onPress={handleSignUp} />
+      <View style={styles.spacer20} />
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <Text style={styles.loginText}>Already have an account? Login</Text>
       </TouchableOpacity>
-    </View>
+    </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  input: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 15,
-    paddingVertical: 15,
-    borderRadius: 10,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    marginBottom: 20,
-  },
-  signUpButton: {
-    backgroundColor: '#28a745',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   loginText: {
     textAlign: 'center',
-    color: '#007BFF',
+    color: colors.secondary,
     fontSize: 16,
+  },
+  spacer20: {
+    height: 20,
+  },
+  spacer40: {
+    height: 40,
   },
 });
 

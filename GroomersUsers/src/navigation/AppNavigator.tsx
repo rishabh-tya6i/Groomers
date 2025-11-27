@@ -13,6 +13,7 @@ import FavoritesScreen from '../screens/FavoritesScreen';
 import ChatScreen from '../screens/ChatScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import TabNavigator from './TabNavigator';
 
 
 const Stack = createNativeStackNavigator();
@@ -23,6 +24,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="SalonList" component={SalonListScreen} />
       <Stack.Screen name="SalonDetails" component={SalonDetailsScreen} />
       <Stack.Screen name="Booking" component={BookingScreen} />

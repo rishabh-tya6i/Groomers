@@ -8,6 +8,9 @@ export type Salon = {
   contactPhone: string;
   contactEmail: string;
   imageUrl?: string;
+  latitude: number;
+  longitude: number;
+  services: string[];
 };
 
 export type ServiceEntity = {

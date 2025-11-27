@@ -1,28 +1,31 @@
-
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Swiper from 'react-native-swiper';
+import { colors, typography } from '../theme';
+import Button from '../components/Button';
+import Title from '../components/Title';
+import Subtitle from '../components/Subtitle';
 
 const OnboardingScreen = ({ navigation }: any) => {
   return (
     <Swiper style={styles.wrapper} showsButtons={false} loop={false}>
       <View style={styles.slide}>
         <Image source={{ uri: 'https://via.placeholder.com/300' }} style={styles.image} />
-        <Text style={styles.title}>Find Salons</Text>
-        <Text style={styles.text}>Discover the best salons and spas near you.</Text>
+        <Title text="Find Salons" />
+        <Subtitle text="Discover the best salons and spas near you." />
       </View>
       <View style={styles.slide}>
         <Image source={{ uri: 'https://via.placeholder.com/300' }} style={styles.image} />
-        <Text style={styles.title}>Book Appointments</Text>
-        <Text style={styles.text}>Easily book appointments anytime, anywhere.</Text>
+        <Title text="Book Appointments" />
+        <Subtitle text="Easily book appointments anytime, anywhere." />
       </View>
       <View style={styles.slide}>
         <Image source={{ uri: 'https://via.placeholder.com/300' }} style={styles.image} />
-        <Text style={styles.title}>Get Notified</Text>
-        <Text style={styles.text}>Receive reminders and updates about your bookings.</Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.replace('Login')}>
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
+        <Title text="Get Notified" />
+        <Subtitle text="Receive reminders and updates about your bookings." />
+        <View style={styles.buttonContainer}>
+          <Button title="Get Started" onPress={() => navigation.replace('Login')} />
+        </View>
       </View>
     </Swiper>
   );
@@ -34,7 +37,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
     padding: 20,
   },
   image: {
@@ -42,28 +45,9 @@ const styles = StyleSheet.create({
     height: 300,
     marginBottom: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#666',
-    paddingHorizontal: 20,
-  },
-  button: {
+  buttonContainer: {
     marginTop: 40,
-    backgroundColor: '#007BFF',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    width: '100%',
   },
 });
 

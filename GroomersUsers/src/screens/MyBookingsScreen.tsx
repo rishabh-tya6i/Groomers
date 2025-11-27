@@ -1,6 +1,10 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { FlatList, ActivityIndicator } from 'react-native';
 import { myBookings, Appointment, cancelAppointment } from '../api/appointments';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import BookingItem from '../components/BookingItem';
+import { colors } from '../theme';
 
 const MyBookingsScreen = () => {
   const [loading, setLoading] = React.useState(false);
@@ -21,83 +25,24 @@ const MyBookingsScreen = () => {
   };
 
   const renderBooking = ({ item }: { item: Appointment }) => (
-    <View style={styles.bookingContainer}>
-      <Text style={styles.salonName}>Salon #{item.salonId}</Text>
-      <Text style={styles.bookingInfo}>Start: {new Date(item.startTime).toLocaleString()}</Text>
-      <Text style={[styles.status, item.status === 'CONFIRMED' ? styles.confirmed : styles.pending]}>{item.status}</Text>
-      <TouchableOpacity style={styles.cancelButton} onPress={() => onCancel(item.id)}>
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
-    </View>
+    <BookingItem item={item} onCancel={() => onCancel(item.id)} />
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>My Bookings</Text>
+    <Container>
+      <Title text="My Bookings" />
       {loading ? (
-        <ActivityIndicator />
+        <ActivityIndicator size="large" color={colors.primary} />
       ) : (
-        <FlatList data={bookings} renderItem={renderBooking} keyExtractor={(item) => String(item.id)} />
+        <FlatList
+          data={bookings}
+          renderItem={renderBooking}
+          keyExtractor={(item) => String(item.id)}
+          showsVerticalScrollIndicator={false}
+        />
       )}
-    </View>
+    </Container>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  bookingContainer: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  salonName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  bookingInfo: {
-    fontSize: 16,
-    color: '#666',
-    marginVertical: 4,
-  },
-  status: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 8,
-  },
-  confirmed: {
-    color: 'green',
-  },
-  pending: {
-    color: 'orange',
-  },
-  cancelButton: {
-    backgroundColor: '#FF6347',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  cancelButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
 
 export default MyBookingsScreen;

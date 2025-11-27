@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SalonRepository extends JpaRepository<Salon, Long> {
+    List<Salon> findByNameContainingIgnoreCase(String name);
+
     @Query(value = """
       SELECT * FROM salons s
       WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL

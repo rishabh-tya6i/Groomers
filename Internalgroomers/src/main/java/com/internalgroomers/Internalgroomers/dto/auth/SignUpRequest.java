@@ -1,5 +1,7 @@
 package com.internalgroomers.Internalgroomers.dto.auth;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -17,6 +19,7 @@ public class SignUpRequest {
     private String password;
 
     @NotBlank(message = "Full name is required")
+    @JsonAlias("name")
     private String fullName;
 
     private String phone;
