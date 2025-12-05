@@ -22,8 +22,8 @@ public class AdminService {
     private final AppointmentRepository appointmentRepository;
 
     public AdminService(CustomerRepository customerRepository,
-                        SalonRepository salonRepository,
-                        AppointmentRepository appointmentRepository) {
+            SalonRepository salonRepository,
+            AppointmentRepository appointmentRepository) {
         this.customerRepository = customerRepository;
         this.salonRepository = salonRepository;
         this.appointmentRepository = appointmentRepository;
@@ -72,5 +72,13 @@ public class AdminService {
         Salon salon = salonRepository.findById(salonId)
                 .orElseThrow(() -> new RuntimeException("Salon not found with id: " + salonId));
         salonRepository.delete(salon);
+    }
+
+    @Transactional
+    public Salon updateSalonStatus(Long salonId, String status) {
+        Salon salon = salonRepository.findById(salonId)
+                .orElseThrow(() -> new RuntimeException("Salon not found with id: " + salonId));
+        salon.setStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus.valueOf(status.toUpperCase()));
+        return salonRepository.save(salon);
     }
 }

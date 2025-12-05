@@ -40,12 +40,17 @@ public class SalonController {
 
     @GetMapping("/search")
     public List<Salon> search(@RequestParam String name) {
-        return salonRepository.findByNameContainingIgnoreCase(name);
+        return salonRepository.findByNameContainingIgnoreCaseAndStatus(name,
+                com.internalgroomers.Internalgroomers.entity.SalonStatus.VERIFIED);
     }
 
     @GetMapping("/{id}")
     public Salon getById(@PathVariable Long id) {
-        return salonService.getByIdEntity(id);
+        Salon salon = salonService.getByIdEntity(id);
+        if (salon.getStatus() != com.internalgroomers.Internalgroomers.entity.SalonStatus.VERIFIED) {
+            throw new RuntimeException("Salon not found");
+        }
+        return salon;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

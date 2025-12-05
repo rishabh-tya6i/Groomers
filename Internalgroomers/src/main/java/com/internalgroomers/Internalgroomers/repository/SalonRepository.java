@@ -8,11 +8,15 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SalonRepository extends JpaRepository<Salon, Long> {
-  List<Salon> findByNameContainingIgnoreCase(String name);
+  List<Salon> findByStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus status);
+
+  List<Salon> findByNameContainingIgnoreCaseAndStatus(String name,
+      com.internalgroomers.Internalgroomers.entity.SalonStatus status);
 
   @Query(value = """
       SELECT * FROM salons s
       WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL
+      AND s.status = 'VERIFIED'
       """, nativeQuery = true)
   List<Salon> findAllWithCoordinates();
 
@@ -25,6 +29,7 @@ public interface SalonRepository extends JpaRepository<Salon, Long> {
           + sin(radians(:lat)) * sin(radians(s.latitude))
         )) AS distance_km
         FROM salons s
+        WHERE s.status = 'VERIFIED'
       ) AS distances
       WHERE distance_km <= :radiusKm
       ORDER BY distance_km

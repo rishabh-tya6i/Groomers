@@ -50,7 +50,7 @@ public class SalonService {
 
     @Cacheable("salons_all")
     public List<Salon> getAll() {
-        return salonRepository.findAll();
+        return salonRepository.findByStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus.VERIFIED);
     }
 
     @Cacheable(value = "salon_by_id", key = "#id")

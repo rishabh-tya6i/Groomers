@@ -66,4 +66,12 @@ public class AdminController {
         List<Appointment> appointments = adminService.getAppointmentsBySalon(salonId);
         return ResponseEntity.ok(appointments);
     }
+
+    @PutMapping("/salons/{id}/status")
+    public ResponseEntity<Salon> updateSalonStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        Salon salon = adminService.updateSalonStatus(id, status);
+        return ResponseEntity.ok(salon);
+    }
 }
