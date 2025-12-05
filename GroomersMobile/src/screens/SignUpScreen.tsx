@@ -11,7 +11,7 @@ const SignUpScreen = ({ navigation }) => {
 
   const handleSignUp = async () => {
     try {
-      const response = await api.post('/auth/signup', { fullName, email, password, phone });
+      const response = await api.post('/auth/signup', { fullName, email, password, phone, roles: ['SALON'] });
       console.log(response.data);
       Alert.alert('Sign Up Successful', 'You can now log in.');
       navigation.navigate('Login');

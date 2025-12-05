@@ -36,7 +36,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -66,8 +67,7 @@ public class SecurityConfig {
 
                 // Return 401 instead of redirecting
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                )
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
 
                 .authorizeHttpRequests(auth -> auth
                         // Public authentication endpoints
@@ -75,6 +75,7 @@ public class SecurityConfig {
 
                         // Public read-only endpoints (browsing)
                         .requestMatchers("/api/collections/**").permitAll()
+                        .requestMatchers("/api/salons/my-salon").authenticated() // Explicitly require auth
                         .requestMatchers("/api/salons/**").permitAll()
                         .requestMatchers("/api/services/**").permitAll()
                         .requestMatchers("/api/slots/salon/**").permitAll()
@@ -90,8 +91,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/slots/**").authenticated()
 
                         // Require authentication for all other requests
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 

@@ -26,7 +26,7 @@ public class SalonController {
     private final AppointmentService appointmentService;
 
     public SalonController(SalonService salonService, SalonRepository salonRepository,
-                           ServiceRepository serviceRepository, AppointmentService appointmentService) {
+            ServiceRepository serviceRepository, AppointmentService appointmentService) {
         this.salonService = salonService;
         this.salonRepository = salonRepository;
         this.serviceRepository = serviceRepository;
@@ -76,8 +76,8 @@ public class SalonController {
 
     @GetMapping("/nearby")
     public List<Salon> searchNearby(@RequestParam double lat,
-                                    @RequestParam double lon,
-                                    @RequestParam(defaultValue = "5") double radiusKm) {
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "5") double radiusKm) {
         return salonRepository.findNearby(lat, lon, radiusKm);
     }
 
@@ -89,7 +89,7 @@ public class SalonController {
     @GetMapping("/{salonId}/appointments")
     @PreAuthorize("hasRole('SALON')")
     public List<Appointment> getSalonAppointments(@PathVariable Long salonId,
-                                                  @AuthenticationPrincipal Customer customer) {
+            @AuthenticationPrincipal Customer customer) {
         // Verify salon ownership in service layer
         return appointmentService.getBookingsForSalon(salonId);
     }
@@ -97,9 +97,20 @@ public class SalonController {
     @GetMapping("/my-salon")
     @PreAuthorize("hasRole('SALON')")
     public SalonDto getMySalon(@AuthenticationPrincipal Customer customer) {
-        return salonRepository.findByOwner(customer)
+        System.out.println("getMySalon called by: " + (customer != null ? customer.getEmail() : "null"));
+        if (customer != null) {
+            System.out.println("Authorities: " + customer.getAuthorities());
+        }
+        return salonRepository.findByOwnerId(customer.getId())
                 .map(salonService::convertToDto)
-                .orElseThrow(() -> new RuntimeException("Salon not found for the current user"));
+                .orElseGet(() -> {
+                    System.out.println("Salon missing for user " + customer.getEmail() + ", creating new one.");
+                    Salon newSalon = new Salon();
+                    newSalon.setOwner(customer);
+                    newSalon.setStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus.PENDING);
+                    Salon saved = salonRepository.save(newSalon);
+                    return salonService.convertToDto(saved);
+                });
     }
 
     @PostMapping(value = "/{salonId}/services", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -114,5 +125,44 @@ public class SalonController {
             @AuthenticationPrincipal Customer customer) {
         return salonService.createService(salonId, customer, name, description,
                 priceCents, durationMinutes, image);
+    }
+
+    @PutMapping("/{id}/details")
+    @PreAuthorize("hasRole('SALON')")
+    public SalonDto updateSalonDetails(@PathVariable Long id,
+            @RequestBody com.internalgroomers.Internalgroomers.dto.SalonDetailsRequest request,
+            @AuthenticationPrincipal Customer customer) {
+        return salonService.updateSalonDetails(id, customer, request);
+    }
+
+    @PutMapping("/{id}/categories")
+    @PreAuthorize("hasRole('SALON')")
+    public SalonDto updateSalonCategories(@PathVariable Long id,
+            @RequestBody com.internalgroomers.Internalgroomers.dto.SalonCategoriesRequest request,
+            @AuthenticationPrincipal Customer customer) {
+        return salonService.updateSalonCategories(id, customer, request);
+    }
+
+    @PutMapping("/{id}/documents")
+    @PreAuthorize("hasRole('SALON')")
+    public SalonDto updateSalonDocuments(@PathVariable Long id,
+            @RequestBody com.internalgroomers.Internalgroomers.dto.SalonDocumentsRequest request,
+            @AuthenticationPrincipal Customer customer) {
+        return salonService.updateSalonDocuments(id, customer, request);
+    }
+
+    @PutMapping("/{id}/bank-details")
+    @PreAuthorize("hasRole('SALON')")
+    public SalonDto updateSalonBankDetails(@PathVariable Long id,
+            @RequestBody com.internalgroomers.Internalgroomers.dto.SalonBankDetailsRequest request,
+            @AuthenticationPrincipal Customer customer) {
+        return salonService.updateSalonBankDetails(id, customer, request);
+    }
+
+    @PutMapping("/{id}/complete-registration")
+    @PreAuthorize("hasRole('SALON')")
+    public SalonDto completeRegistration(@PathVariable Long id,
+            @AuthenticationPrincipal Customer customer) {
+        return salonService.completeRegistration(id, customer);
     }
 }

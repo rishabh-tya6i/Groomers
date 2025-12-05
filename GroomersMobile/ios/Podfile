@@ -8,19 +8,15 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
-
 target 'GroomersMobile' do
   config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    # Force New Architecture OFF for now
+    :new_arch_enabled => false
   )
 
   post_install do |installer|
@@ -30,5 +26,14 @@ target 'GroomersMobile' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Allow non-modular includes for a few noisy pods
+    installer.pods_project.targets.each do |target|
+      if ['RNReanimated', 'react-native-safe-area-context', 'ReactAppDependencyProvider'].include? target.name
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        end
+      end
+    end
   end
 end

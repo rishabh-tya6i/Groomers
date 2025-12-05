@@ -8,30 +8,32 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SalonRepository extends JpaRepository<Salon, Long> {
-    List<Salon> findByNameContainingIgnoreCase(String name);
+  List<Salon> findByNameContainingIgnoreCase(String name);
 
-    @Query(value = """
+  @Query(value = """
       SELECT * FROM salons s
       WHERE s.latitude IS NOT NULL AND s.longitude IS NOT NULL
       """, nativeQuery = true)
-    List<Salon> findAllWithCoordinates();
+  List<Salon> findAllWithCoordinates();
 
-    // Nearby search (Haversine)
-    @Query(value = """
-      SELECT * FROM (
-      SELECT s.*, (6371 * acos(
-        cos(radians(:lat)) * cos(radians(s.latitude))
-        * cos(radians(s.longitude) - radians(:lon))
-        + sin(radians(:lat)) * sin(radians(s.latitude))
-      )) AS distance_km
-      FROM salons s
-    ) AS distances
-    WHERE distance_km <= :radiusKm
-    ORDER BY distance_km
-    """, nativeQuery = true)
-    List<Salon> findNearby(@Param("lat") double lat,
-                           @Param("lon") double lon,
-                           @Param("radiusKm") double radiusKm);
+  // Nearby search (Haversine)
+  @Query(value = """
+        SELECT * FROM (
+        SELECT s.*, (6371 * acos(
+          cos(radians(:lat)) * cos(radians(s.latitude))
+          * cos(radians(s.longitude) - radians(:lon))
+          + sin(radians(:lat)) * sin(radians(s.latitude))
+        )) AS distance_km
+        FROM salons s
+      ) AS distances
+      WHERE distance_km <= :radiusKm
+      ORDER BY distance_km
+      """, nativeQuery = true)
+  List<Salon> findNearby(@Param("lat") double lat,
+      @Param("lon") double lon,
+      @Param("radiusKm") double radiusKm);
 
-    java.util.Optional<Salon> findByOwner(com.internalgroomers.Internalgroomers.entity.Customer owner);
+  java.util.Optional<Salon> findByOwner(com.internalgroomers.Internalgroomers.entity.Customer owner);
+
+  java.util.Optional<Salon> findByOwnerId(Long ownerId);
 }

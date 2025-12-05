@@ -28,11 +28,11 @@ public class AuthenticationService {
     private final OtpService otpService;
 
     public AuthenticationService(CustomerRepository customerRepository,
-                                 SalonRepository salonRepository,
-                                 PasswordEncoder passwordEncoder,
-                                 JwtTokenProvider jwtTokenProvider,
-                                 AuthenticationManager authenticationManager,
-                                 OtpService otpService) {
+            SalonRepository salonRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            AuthenticationManager authenticationManager,
+            OtpService otpService) {
         this.customerRepository = customerRepository;
         this.salonRepository = salonRepository;
         this.passwordEncoder = passwordEncoder;
@@ -55,10 +55,33 @@ public class AuthenticationService {
         customer.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         customer.setPhone(signUpRequest.getPhone());
 
-        // Set default role as USER
-        customer.setRoles(Set.of(Role.USER));
+        // Determine roles
+        Set<Role> roles = new java.util.HashSet<>();
+        if (signUpRequest.getRoles() != null && !signUpRequest.getRoles().isEmpty()) {
+            for (String roleName : signUpRequest.getRoles()) {
+                try {
+                    roles.add(Role.valueOf(roleName.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    // Ignore invalid roles
+                }
+            }
+        }
 
-        customerRepository.save(customer);
+        if (roles.isEmpty()) {
+            roles.add(Role.USER);
+        }
+
+        customer.setRoles(roles);
+
+        Customer savedCustomer = customerRepository.save(customer);
+
+        // If role is SALON, create Salon entity
+        if (roles.contains(Role.SALON)) {
+            Salon salon = new Salon();
+            salon.setOwner(savedCustomer);
+            salon.setStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus.PENDING);
+            salonRepository.save(salon);
+        }
     }
 
     public String signIn(SignInRequest signInRequest) {
@@ -66,41 +89,38 @@ public class AuthenticationService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         signInRequest.getEmail(),
-                        signInRequest.getPassword()
-                )
-        );
+                        signInRequest.getPassword()));
 
         // Generate and return JWT token
         return jwtTokenProvider.generateToken(authentication);
     }
 
     @Transactional
-    public void signUpVendor(com.internalgroomers.Internalgroomers.dto.VendorRegistrationRequest request) {
+    public String signUpVendor(com.internalgroomers.Internalgroomers.dto.VendorSignupRequest request) {
         if (customerRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email address already in use.");
         }
 
         // Create customer with SALON role
         Customer customer = new Customer();
-        customer.setFullName(request.getFullName());
         customer.setEmail(request.getEmail());
         customer.setPassword(passwordEncoder.encode(request.getPassword()));
         customer.setPhone(request.getPhone());
-        customer.setRoles(Set.of(Role.SALON)); // Changed from ADMIN to SALON
+        customer.setRoles(Set.of(Role.SALON));
 
         Customer savedCustomer = customerRepository.save(customer);
 
         // Create salon linked to this customer
         Salon salon = new Salon();
-        salon.setName(request.getSalonName());
-        salon.setDescription(request.getSalonDescription());
-        salon.setCity(request.getSalonCity());
-        salon.setContactPhone(request.getSalonContactPhone());
-        salon.setContactEmail(request.getSalonContactEmail());
-        salon.setImagePath(request.getSalonImageUrl()); // This will be null initially, can be updated later
         salon.setOwner(savedCustomer);
+        salon.setStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus.PENDING);
 
         salonRepository.save(salon);
+
+        // Generate token
+        Authentication authentication = new UsernamePasswordAuthenticationToken(savedCustomer, null,
+                savedCustomer.getAuthorities());
+        return jwtTokenProvider.generateToken(authentication);
     }
 
     public void requestOtp(String phone) {
@@ -128,9 +148,12 @@ public class AuthenticationService {
 
     private String normalizeIndianNumber(String phone) {
         String p = phone.trim().replaceAll("[^0-9]", "");
-        if (p.startsWith("91") && p.length() == 12) return "+" + p.substring(0, 2) + p.substring(2);
-        if (p.length() == 10) return "+91" + p;
-        if (p.startsWith("+91") && p.length() == 13) return p;
+        if (p.startsWith("91") && p.length() == 12)
+            return "+" + p.substring(0, 2) + p.substring(2);
+        if (p.length() == 10)
+            return "+91" + p;
+        if (p.startsWith("+91") && p.length() == 13)
+            return p;
         throw new IllegalArgumentException("Invalid Indian phone number");
     }
 }

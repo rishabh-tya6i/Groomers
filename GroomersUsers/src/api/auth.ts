@@ -11,6 +11,7 @@ export type SignUpRequest = {
   name: string;
   email: string;
   password: string;
+  roles?: string[];
 };
 
 export const signIn = (data: SignInRequest) => post<SignInResponse>('/api/auth/signin', data);

@@ -4,17 +4,20 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useAuth } from '../context/AuthContext';
+
 const LoginScreen = ({ navigation }) => {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
       const response = await api.post('/auth/signin', { email, password });
-      const { token } = response.data;
-      await AsyncStorage.setItem('token', token);
+      const { accessToken } = response.data;
+      await login(accessToken);
       Alert.alert('Login Successful', `Welcome!`);
-      navigation.navigate('AppointmentList');
+      // navigation.navigate('AppointmentList'); // Handled by AppNavigator via isLoggedIn state
     } catch (error) {
       console.error(error);
       Alert.alert('Login Failed', 'Invalid email or password.');

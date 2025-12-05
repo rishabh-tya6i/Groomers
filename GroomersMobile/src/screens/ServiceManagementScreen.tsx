@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } => 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, FlatList, Alert, Modal } from 'react-native';
 import api from '../services/api';
 import { useSalon } from '../context/SalonContext';

@@ -61,12 +61,14 @@ public class AuthController {
     }
 
     @PostMapping("/vendor/signup")
-    public ResponseEntity<Map<String, String>> signUpVendor(@Valid @RequestBody com.internalgroomers.Internalgroomers.dto.VendorRegistrationRequest vendorRegistrationRequest) {
-        authenticationService.signUpVendor(vendorRegistrationRequest);
+    public ResponseEntity<Map<String, String>> signUpVendor(
+            @Valid @RequestBody com.internalgroomers.Internalgroomers.dto.VendorSignupRequest vendorSignupRequest) {
+        String token = authenticationService.signUpVendor(vendorSignupRequest);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Vendor registered successfully");
-        response.put("email", vendorRegistrationRequest.getEmail());
+        response.put("email", vendorSignupRequest.getEmail());
+        response.put("token", token);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

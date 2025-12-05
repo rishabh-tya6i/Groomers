@@ -19,16 +19,18 @@ import java.util.stream.Collectors;
 @Service
 public class SalonService {
 
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
     private final SalonRepository salonRepository;
     private final ServiceRepository serviceRepository;
     private final FileStorageService fileStorageService;
 
     @Autowired
     public SalonService(SalonRepository salonRepository, ServiceRepository serviceRepository,
-                        FileStorageService fileStorageService) {
+            FileStorageService fileStorageService, com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.salonRepository = salonRepository;
         this.serviceRepository = serviceRepository;
         this.fileStorageService = fileStorageService;
+        this.objectMapper = objectMapper;
     }
 
     @Cacheable("salons_dto_all")
@@ -64,7 +66,7 @@ public class SalonService {
 
     @Transactional
     public SalonDto createSalon(String name, String description, String city,
-                                String contactPhone, String contactEmail, MultipartFile image) {
+            String contactPhone, String contactEmail, MultipartFile image) {
         Salon salon = new Salon();
         salon.setName(name);
         salon.setDescription(description);
@@ -83,8 +85,8 @@ public class SalonService {
 
     @Transactional
     public SalonDto updateSalon(Long id, Customer owner, String name, String description,
-                                String city, String contactPhone, String contactEmail,
-                                MultipartFile image) {
+            String city, String contactPhone, String contactEmail,
+            MultipartFile image) {
         Salon existingSalon = salonRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Salon not found with id: " + id));
 
@@ -116,10 +118,11 @@ public class SalonService {
     }
 
     @Transactional
-    @CacheEvict(value = {"salons_all","salon_by_id","salon_services","salons_dto_all","salon_dto_by_id"}, allEntries = true)
+    @CacheEvict(value = { "salons_all", "salon_by_id", "salon_services", "salons_dto_all",
+            "salon_dto_by_id" }, allEntries = true)
     public ServiceEntity createService(Long salonId, Customer owner, String name,
-                                       String description, Long priceCents,
-                                       Integer durationMinutes, MultipartFile image) {
+            String description, Long priceCents,
+            Integer durationMinutes, MultipartFile image) {
         Salon salon = salonRepository.findById(salonId)
                 .orElseThrow(() -> new RuntimeException("Salon not found with id: " + salonId));
 
@@ -147,10 +150,11 @@ public class SalonService {
     }
 
     @Transactional
-    @CacheEvict(value = {"salons_all","salon_by_id","salon_services","salons_dto_all","salon_dto_by_id"}, allEntries = true)
+    @CacheEvict(value = { "salons_all", "salon_by_id", "salon_services", "salons_dto_all",
+            "salon_dto_by_id" }, allEntries = true)
     public ServiceEntity updateService(Long serviceId, Customer owner, String name,
-                                       String description, Long priceCents,
-                                       Integer durationMinutes, MultipartFile image) {
+            String description, Long priceCents,
+            Integer durationMinutes, MultipartFile image) {
         ServiceEntity existingService = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found with id: " + serviceId));
 
@@ -180,7 +184,8 @@ public class SalonService {
     }
 
     @Transactional
-    @CacheEvict(value = {"salons_all","salon_by_id","salon_services","salons_dto_all","salon_dto_by_id"}, allEntries = true)
+    @CacheEvict(value = { "salons_all", "salon_by_id", "salon_services", "salons_dto_all",
+            "salon_dto_by_id" }, allEntries = true)
     public void deleteService(Long serviceId, Customer owner) {
         ServiceEntity service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found with id: " + serviceId));
@@ -201,15 +206,91 @@ public class SalonService {
         serviceRepository.deleteById(serviceId);
     }
 
+    @Transactional
+    public SalonDto updateSalonDetails(Long id, Customer owner,
+            com.internalgroomers.Internalgroomers.dto.SalonDetailsRequest request) {
+        Salon salon = getOwnedSalon(id, owner);
+        salon.setName(request.getSalonName());
+        salon.setBusinessType(request.getBusinessType());
+        salon.setAddressLine(request.getAddressLine());
+        salon.setCity(request.getCity());
+        salon.setState(request.getState());
+        salon.setPostalCode(request.getPostalCode());
+        salon.setLatitude(request.getLatitude());
+        salon.setLongitude(request.getLongitude());
+        // salon.setContactPersonName(request.getContactPersonName()); // Add to entity
+        // if needed
+        salon.setEmployeeCount(request.getEmployeeCount());
+        salon.setImagePath(request.getCoverPhoto()); // Assuming coverPhoto is URL or path
+        salon.setGalleryPhotos(request.getGalleryPhotos());
+
+        return convertToDto(salonRepository.save(salon));
+    }
+
+    @Transactional
+    public SalonDto updateSalonCategories(Long id, Customer owner,
+            com.internalgroomers.Internalgroomers.dto.SalonCategoriesRequest request) {
+        Salon salon = getOwnedSalon(id, owner);
+        salon.setCategoryIds(request.getCategoryIds());
+        salon.setSubCategoryIds(request.getSubCategoryIds());
+        return convertToDto(salonRepository.save(salon));
+    }
+
+    @Transactional
+    public SalonDto updateSalonDocuments(Long id, Customer owner,
+            com.internalgroomers.Internalgroomers.dto.SalonDocumentsRequest request) {
+        Salon salon = getOwnedSalon(id, owner);
+        salon.setLegalDocuments(objectMapper.valueToTree(request.getDocuments()));
+        salon.setStatus(com.internalgroomers.Internalgroomers.entity.SalonStatus.UNDER_REVIEW);
+        return convertToDto(salonRepository.save(salon));
+    }
+
+    @Transactional
+    public SalonDto updateSalonBankDetails(Long id, Customer owner,
+            com.internalgroomers.Internalgroomers.dto.SalonBankDetailsRequest request) {
+        Salon salon = getOwnedSalon(id, owner);
+        salon.setBankDetails(objectMapper.valueToTree(request));
+        return convertToDto(salonRepository.save(salon));
+    }
+
+    @Transactional
+    public SalonDto completeRegistration(Long id, Customer owner) {
+        Salon salon = getOwnedSalon(id, owner);
+        salon.setRegistrationCompleted(true);
+        return convertToDto(salonRepository.save(salon));
+    }
+
+    private Salon getOwnedSalon(Long id, Customer owner) {
+        Salon salon = salonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Salon not found with id: " + id));
+        Salon ownedSalon = salonRepository.findByOwner(owner)
+                .orElseThrow(() -> new RuntimeException("Salon not found for the current user"));
+        if (!salon.getId().equals(ownedSalon.getId())) {
+            throw new RuntimeException("You are not authorized to update this salon");
+        }
+        return salon;
+    }
+
     public SalonDto convertToDto(Salon salon) {
         SalonDto dto = new SalonDto();
         dto.setId(salon.getId());
         dto.setName(salon.getName());
         dto.setDescription(salon.getDescription());
         dto.setCity(salon.getCity());
+        dto.setState(salon.getState());
+        dto.setPostalCode(salon.getPostalCode());
         dto.setContactPhone(salon.getContactPhone());
         dto.setContactEmail(salon.getContactEmail());
-        dto.setImageUrl(salon.getImagePath()); // Changed from imageUrl to imagePath
+        dto.setImageUrl(salon.getImagePath());
+        dto.setBusinessType(salon.getBusinessType());
+        dto.setEmployeeCount(salon.getEmployeeCount());
+        dto.setGalleryPhotos(salon.getGalleryPhotos());
+        dto.setLegalDocuments(salon.getLegalDocuments());
+        dto.setBankDetails(salon.getBankDetails());
+        dto.setStatus(salon.getStatus());
+        dto.setCategoryIds(salon.getCategoryIds());
+        dto.setSubCategoryIds(salon.getSubCategoryIds());
+        dto.setRegistrationCompleted(salon.isRegistrationCompleted());
         return dto;
     }
 }

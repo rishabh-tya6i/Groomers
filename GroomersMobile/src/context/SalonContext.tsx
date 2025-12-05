@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext } from 'react';
 
-const SalonContext = createContext(null);
+const SalonContext = createContext({ salon: null, setSalon: (salon) => { } });
 
 export const SalonProvider = ({ children }) => {
   const [salon, setSalon] = useState(null);

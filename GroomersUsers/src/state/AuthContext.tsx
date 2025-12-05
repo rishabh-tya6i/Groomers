@@ -21,7 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (req: SignUpRequest) => {
-    await signUp(req);
+    await signUp({ ...req, roles: ['USER'] });
   };
 
   const logout = () => {
